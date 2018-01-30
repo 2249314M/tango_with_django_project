@@ -18,7 +18,11 @@ def index(request):
     return render(request, 'rango/index.html', context_dict)
 
 def about(request):
-    return render(request, 'rango/about.html')
+    # Print if the method is GET or post
+    print(request.method)
+    # Print user name (if no one logged in prints AnonymousUser)
+    print(request.user)
+    return render(request, 'rango/about.html',{})
 
 def show_category(request,category_name_slug):
     context_dict = {}
