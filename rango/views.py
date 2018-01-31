@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 #Import Category view
 from rango.models import Category,Page
-from rango.forms import CategoryForm, PageForm
+from rango.forms import CategoryForm, PageForm, UserProfileForm, UserForm
 
 def index(request):
     # Query database for a list of ALL categories currently stored
@@ -86,3 +86,51 @@ def add_page(request, category_name_slug):
 
     context_dict = {'form':form, 'category':category}
     return render(request, 'rango/add_page.html', context_dict)
+
+def register(request):
+    # Boolean to tell template if registration was successful
+    registered = False
+
+    # If HTTP POST, process form data
+    if request.method == 'POST':
+        # Grab info from raw form information
+        user_form = UserForm(data=request.POST)
+        profile_form = UserProfileForm(data=request.POST)
+
+        # If both forms are valid
+        if user_form.is_valid() and profile_form.is_valid():
+            # Save user's form data to database
+            user = user_form.save()
+
+            # Hash password then update user object
+            user.set_password(user.password)
+            user.save()
+
+            profile = profile_form.save(commit=False)
+            profile.user = user
+
+            # If user provided profile picture, retrieve it from input form
+            # and put in UserProfile model
+            if 'picture' in request.FILES:
+                profile.picture = request.FILES['picture']
+
+            # Save UserProfile instance
+            profile.save()
+
+            # Update variable to indicate successful registration
+            registered = True
+        else:
+            # Either or both forms are invalid
+            print(user_form.errors, profile_form.errors)
+
+    else:
+        # Not a HTTP POST so render form using two blank ModelForm instances
+        user_form = UserForm()
+        profile_form = UserProfileForm()
+
+    # Return template depending on context
+    return render(request,
+                    'rango/register.html',
+                    {'user_form': user_form,
+                    'profile_form': profile_form,
+                    'registered': registered})
