@@ -1,0 +1,14 @@
+{% extends 'rango/base.html' %}
+
+{% block title_block %}
+	Restricted Page
+{% endblock %}
+
+{% block body_block %}
+	<h1>Rango says...
+			howdy {{ user.username }}
+	</h1>
+	<div>
+    You can only see this page since you're logged in!
+  </div>
+{% endblock %}

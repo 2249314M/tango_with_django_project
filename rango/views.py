@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from rango.models import Category,Page
 from rango.forms import CategoryForm, PageForm, UserProfileForm, UserForm
@@ -137,6 +138,7 @@ def register(request):
                     'registered': registered})
 
 def user_login(request):
+
     # If HTTP POST, pull out relevant information
     if request.method == 'POST':
         # Get username and password
@@ -159,8 +161,18 @@ def user_login(request):
         else:
             # Bad login details so don't log in
             print("Invalid login details: {0}, {1}".format(username,password))
-            return HttpResponse("Invalid login details supplied.")
+            return render(request, 'rango/login.html', {'message': "Invalid login details supplied."})
 
     # If not HTTP POST display login form
     else:
         return render(request, 'rango/login.html', {})
+
+@login_required
+def restricted(request):
+    return render(request, 'rango/restricted.html', {})
+
+@login_required
+def user_logout(request):
+    # Use login_requred to ensure user can only log out if logged in
+    logout(request)
+    return HttpResponseRedirect(reverse('index'))
